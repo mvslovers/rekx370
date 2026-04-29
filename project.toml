@@ -895,6 +895,15 @@ include = [
 [link.module.dep_includes]
 "mvslovers/lstring370" = "*"
 
+[[link.module]]
+name = "TSTTDBG"
+entry = "@@CRT0"
+options = ["LIST", "MAP", "XREF", "RENT"]
+include = [
+  "@@CRT1",
+  "TSTTDBG",
+]
+
 # ---------------------------------------------------------------
 # TINITVL - Live MVS test caller for IRXINIT INITENVB.
 # Pure HLASM caller (no C runtime, no @@CRT0). Drives IRXINIT
