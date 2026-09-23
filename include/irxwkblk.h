@@ -248,6 +248,21 @@ struct irx_wkblk_int
      * fallback.                                                        */
     int wkbi_bc_unsup_reason;
     int wkbi_bc_unsup_line;
+
+    /* --- Varcache diagnostic (#218, DIAGNOSTIC ONLY) ---------------- */
+    /* Hit / miss / bypass tallies for the per-operand variable
+     * resolution cache, to answer why its measured MVS gain
+     * (+0.6..+2.1 %) came in an order of magnitude under the profile's
+     * ~18.8 % upper bound: is the cache hitting on MVS as it did on the
+     * host (~99.9 % for simple vars), or not?
+     *
+     * `bypass` counts compound (dotted) names, which never consult a
+     * slot.  Emitted by irxterm() under REXX370_BCDEBUG alongside the
+     * existing [bc] line.  NOT intended to ship — this exists to settle
+     * one question and should be removed once it has.                 */
+    int wkbi_vc_hit;
+    int wkbi_vc_miss;
+    int wkbi_vc_bypass;
 };
 
 #define WKBLK_INT_ID "WKBI"

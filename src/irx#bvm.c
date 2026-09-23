@@ -1325,16 +1325,44 @@ int irx_bc_execute(struct envblock *envblock,
                     }
                     stack[sp].type_cache = 0;
                     stack[sp].int_cache = 0;
-                    vrc = var_cache != NULL
-                              ? vpool_get_cached(vpool, name_data, name_len,
-                                                 stack[sp].str,
-                                                 &stack[sp].type_cache,
-                                                 &stack[sp].int_cache,
-                                                 &var_cache[idx])
-                              : vpool_get_buf(vpool, name_data, name_len,
-                                              stack[sp].str,
-                                              &stack[sp].type_cache,
-                                              &stack[sp].int_cache);
+                    if (var_cache != NULL)
+                    {
+                        int vc_outcome = VPOOL_VC_MISS;
+
+                        vrc = vpool_get_cached(vpool, name_data, name_len,
+                                               stack[sp].str,
+                                               &stack[sp].type_cache,
+                                               &stack[sp].int_cache,
+                                               &var_cache[idx], &vc_outcome);
+                        /* #218 diagnostic tally — remove with the counters. */
+                        {
+                            struct irx_wkblk_int *vcw =
+                                (struct irx_wkblk_int *)
+                                    envblock->envblock_workblok_ext;
+                            if (vcw != NULL)
+                            {
+                                if (vc_outcome == VPOOL_VC_HIT)
+                                {
+                                    vcw->wkbi_vc_hit++;
+                                }
+                                else if (vc_outcome == VPOOL_VC_BYPASS)
+                                {
+                                    vcw->wkbi_vc_bypass++;
+                                }
+                                else
+                                {
+                                    vcw->wkbi_vc_miss++;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        vrc = vpool_get_buf(vpool, name_data, name_len,
+                                            stack[sp].str,
+                                            &stack[sp].type_cache,
+                                            &stack[sp].int_cache);
+                    }
                     if (vrc == VPOOL_NOT_FOUND)
                     {
                         /* NOVALUE trap: fire if SIGNAL ON NOVALUE is active */

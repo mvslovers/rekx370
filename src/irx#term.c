@@ -180,6 +180,17 @@ int irxterm(struct envblock *envblk)
                        wkbi->wkbi_bc_unsup_line,
                        irx_bc_unsup_text(wkbi->wkbi_bc_unsup_reason));
             }
+            /* #218 varcache diagnostic — remove with the counters. */
+            {
+                int vh = wkbi->wkbi_vc_hit;
+                int vm = wkbi->wkbi_vc_miss;
+                int vb = wkbi->wkbi_vc_bypass;
+                int vt = vh + vm;
+                printf("[vc] hit=%d miss=%d bypass=%d hitrate=%d.%02d%%\n",
+                       vh, vm, vb,
+                       vt > 0 ? (int)((long)vh * 100 / vt) : 0,
+                       vt > 0 ? (int)(((long)vh * 10000 / vt) % 100) : 0);
+            }
             fflush(stdout);
         }
 

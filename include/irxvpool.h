@@ -117,6 +117,11 @@ struct irx_vpool
  * changes: vpool_destroy() + vpool_create() can return the same
  * address, and a fresh pool starts at generation 0, so the pair could
  * otherwise match a dead pool by coincidence. */
+/* vpool_get_cached() outcome codes (diagnostic out-param). */
+#define VPOOL_VC_MISS   0
+#define VPOOL_VC_HIT    1
+#define VPOOL_VC_BYPASS 2
+
 struct vpool_cache_slot
 {
     struct irx_vpool *pool;    /* pool the entry was resolved in   */
@@ -185,12 +190,15 @@ int vpool_get_buf(struct irx_vpool *pool,
  * names ending in '.', and name_matches_stem() compares the stem's
  * full length including that dot, so a dotless name can never match
  * an exposed stem. */
+/* `outcome` (optional, may be NULL) reports which path was taken, for
+ * the #218 diagnostic: VPOOL_VC_HIT / _MISS / _BYPASS. */
 int vpool_get_cached(struct irx_vpool *pool,
                      const char *name_data, int name_len,
                      PLstr value,
                      int32_t *type_cache_out,
                      int32_t *int_cache_out,
-                     struct vpool_cache_slot *slot) asm("VPOOLGTC");
+                     struct vpool_cache_slot *slot,
+                     int *outcome) asm("VPOOLGTC");
 
 int vpool_set_buf(struct irx_vpool *pool,
                   const char *name_data, int name_len,

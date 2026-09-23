@@ -930,7 +930,8 @@ static int copy_entry_out(struct irx_vpool *pool, struct vpool_entry *tgt,
 
 int vpool_get_cached(struct irx_vpool *pool, const char *name_data,
                      int name_len, PLstr value, int32_t *tc_out,
-                     int32_t *ic_out, struct vpool_cache_slot *slot)
+                     int32_t *ic_out, struct vpool_cache_slot *slot,
+                     int *outcome)
 {
     Lstr name;
     int idx;
@@ -950,6 +951,10 @@ int vpool_get_cached(struct irx_vpool *pool, const char *name_data,
     {
         if (name_data[i] == '.')
         {
+            if (outcome != NULL)
+            {
+                *outcome = VPOOL_VC_BYPASS;
+            }
             return vpool_get_buf(pool, name_data, name_len, value, tc_out,
                                  ic_out);
         }
@@ -963,6 +968,10 @@ int vpool_get_cached(struct irx_vpool *pool, const char *name_data,
         tgt = resolve_ref(slot->entry);
         if (tgt != NULL && !(tgt->flags & VPOOL_UNSET))
         {
+            if (outcome != NULL)
+            {
+                *outcome = VPOOL_VC_HIT;
+            }
             return copy_entry_out(pool, tgt, value, tc_out, ic_out);
         }
         /* Entry went UNSET behind the cache (EXPOSE placeholder that
@@ -973,6 +982,11 @@ int vpool_get_cached(struct irx_vpool *pool, const char *name_data,
     name.len = (size_t)name_len;
     name.maxlen = (size_t)name_len;
     name.type = LSTRING_TY;
+
+    if (outcome != NULL)
+    {
+        *outcome = VPOOL_VC_MISS;
+    }
 
     idx = bucket_index(pool, &name);
     e = find_in_bucket(pool->buckets[idx], &name);

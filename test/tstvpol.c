@@ -604,7 +604,7 @@ static int cached_get(struct irx_vpool *pool, const char *name,
                       struct vpool_cache_slot *slot, Lstr *out)
 {
     return vpool_get_cached(pool, name, (int)strlen(name), out, NULL, NULL,
-                            slot);
+                            slot, NULL);
 }
 
 static void test_varcache(void)
